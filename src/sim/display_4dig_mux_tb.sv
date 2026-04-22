@@ -2,82 +2,58 @@
 
 module display_4dig_mux_tb;
 
-    // =========================================================
-    // Señales de prueba
-    // =========================================================
-    logic        clk;
-    logic        rst;
-    logic [13:0] number;
-    logic [6:0]  seg;
-    logic [3:0]  dig;
+    logic clk;
+    logic rst;
+    logic [3:0] d0, d1, d2, d3;
+    logic [6:0] seg;
+    logic [3:0] dig;
 
-    // =========================================================
-    // Instancia del DUT
-    // =========================================================
     display_4dig_mux #(
-        .CLK_FREQ(1000),       // valor pequeño para simulación rápida
-        .REFRESH_HZ(10),       // valor pequeño para ver cambios fácilmente
-        .COMMON_ANODE(0)       // cambiar a 1 si quiere probar ánodo común
+        .CLK_FREQ(1000),
+        .REFRESH_HZ(10),
+        .COMMON_ANODE(0)
     ) dut (
-        .clk   (clk),
-        .rst   (rst),
-        .number(number),
-        .seg   (seg),
-        .dig   (dig)
+        .clk(clk),
+        .rst(rst),
+        .d0(d0),
+        .d1(d1),
+        .d2(d2),
+        .d3(d3),
+        .seg(seg),
+        .dig(dig)
     );
 
-    // =========================================================
-    // Generación de reloj
-    // =========================================================
     initial clk = 0;
-    always #5 clk = ~clk;   // reloj de 10 ns de período
+    always #5 clk = ~clk;
 
-    // =========================================================
-    // Monitoreo
-    // =========================================================
     initial begin
-        $display("Tiempo\t rst\t number\t dig\t seg");
-        $monitor("%0t\t %b\t %0d\t %b\t %b", $time, rst, number, dig, seg);
-    end
-
-    // =========================================================
-    // Estímulos
-    // =========================================================
-    initial begin
-        // Inicialización
-        rst    = 1;
-        number = 0;
-
-        // Mantener reset unos ciclos
-        #30;
+        rst = 1;
+        d0 = 0; d1 = 0; d2 = 0; d3 = 0;
+        #20;
         rst = 0;
 
-        // Prueba 1
-        number = 14'd0;
+        // 0000
+        d0 = 0; d1 = 0; d2 = 0; d3 = 0;
         #500;
 
-        // Prueba 2
-        number = 14'd7;
+        // 0007
+        d0 = 7; d1 = 0; d2 = 0; d3 = 0;
         #500;
 
-        // Prueba 3
-        number = 14'd42;
+        // 0042
+        d0 = 2; d1 = 4; d2 = 0; d3 = 0;
         #500;
 
-        // Prueba 4
-        number = 14'd123;
+        // 0123
+        d0 = 3; d1 = 2; d2 = 1; d3 = 0;
         #500;
 
-        // Prueba 5
-        number = 14'd2026;
+        // 2026
+        d0 = 6; d1 = 2; d2 = 0; d3 = 2;
         #500;
 
-        // Prueba 6
-        number = 14'd9999;
-        #500;
-
-        // Prueba 7: valor mayor a 9999
-        number = 14'd12000;
+        // 9999
+        d0 = 9; d1 = 9; d2 = 9; d3 = 9;
         #500;
 
         $finish;
