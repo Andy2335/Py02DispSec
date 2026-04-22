@@ -1,77 +1,86 @@
 `timescale 1ns/1ps
 
-module top_tb;
-    /*
-    Observe que en esta seccion los logic no se definen como input o output, son propios del modulo
-    como si fueran un nodo, por eso se conectan en el DUT. 
-    */
-    logic [3:0] sw;                      
-    logic [6:0] segments;
-    logic [6:0] out;
+module display_4dig_mux_tb;
 
-    // DUT (Device Under Test)
+    // =========================================================
+    // Señales de prueba
+    // =========================================================
+    logic        clk;
+    logic        rst;
+    logic [13:0] number;
+    logic [6:0]  seg;
+    logic [3:0]  dig;
 
-    /*
-    Observe que .sw se refiere al nodo sw creado en este propio modulo, (sw) se refiere al input 
-    definido en el top. Se recomienda usar los mismos nombres porque esto permite seguir trabajando
-    con el mismo nombre de variable y la conexion es mas facil. De igual forma para las demas.
-
-    Observe que se prefiere usar los S# porque es mas facil y corto que escribir segments[#]...
-    */
-    top dut (
-        .sw(sw),
-        .segments({SA, SB, SC, SD, SE, SF, SG})
+    // =========================================================
+    // Instancia del DUT
+    // =========================================================
+    display_4dig_mux #(
+        .CLK_FREQ(1000),       // valor pequeño para simulación rápida
+        .REFRESH_HZ(10),       // valor pequeño para ver cambios fácilmente
+        .COMMON_ANODE(0)       // cambiar a 1 si quiere probar ánodo común
+    ) dut (
+        .clk   (clk),
+        .rst   (rst),
+        .number(number),
+        .seg   (seg),
+        .dig   (dig)
     );
 
-    // Función que devuelve patrón esperado. Se utilizara para comparar 'segments' contra 'expected'
-    function automatic [6:0] expected (input [3:0] val);
-        case (val)
-            4'd0: expected = 7'b1111110;
-            4'd1: expected = 7'b0110000;
-            4'd2: expected = 7'b1101101;
-            4'd3: expected = 7'b1111001;
-            4'd4: expected = 7'b0110011;
-            4'd5: expected = 7'b1011011;
-            4'd6: expected = 7'b1011111;
-            4'd7: expected = 7'b1110000;
-            4'd8: expected = 7'b1111111;
-            4'd9: expected = 7'b1110011;
-            4'd10: expected = 7'b1110111; // A
-            4'd11: expected = 7'b0011111; // B
-            4'd12: expected = 7'b1001110; // C
-            4'd13: expected = 7'b0111101; // D
-            4'd14: expected = 7'b1001111; // E
-            4'd15: expected = 7'b1000111; // F
+    // =========================================================
+    // Generación de reloj
+    // =========================================================
+    initial clk = 0;
+    always #5 clk = ~clk;   // reloj de 10 ns de período
 
-
-            default: expected = 7'b0000000;
-        endcase
-    endfunction
-
+    // =========================================================
+    // Monitoreo
+    // =========================================================
     initial begin
-        $display("Starting exhaustive test...");
-
-        for (int i = 0; i < 16; i++) begin
-            sw = i;
-            #1;
-            out = {SG, SF, SE, SD, SC, SB, SA};       
-
-            if (out !== expected(i)) begin
-                $display("ERROR at %0d -> got %b expected %b",
-                         i, out, expected(i));
-            end
-            else begin
-                $display("OK %0d -> %b", i, out);
-            end
-        end
-
-        $display("Test finished");
-        $finish;
+        $display("Tiempo\t rst\t number\t dig\t seg");
+        $monitor("%0t\t %b\t %0d\t %b\t %b", $time, rst, number, dig, seg);
     end
 
+    // =========================================================
+    // Estímulos
+    // =========================================================
     initial begin
-        $dumpfile("top_tb.vcd");
-        $dumpvars(0,top_tb);
+        // Inicialización
+        rst    = 1;
+        number = 0;
+
+        // Mantener reset unos ciclos
+        #30;
+        rst = 0;
+
+        // Prueba 1
+        number = 14'd0;
+        #500;
+
+        // Prueba 2
+        number = 14'd7;
+        #500;
+
+        // Prueba 3
+        number = 14'd42;
+        #500;
+
+        // Prueba 4
+        number = 14'd123;
+        #500;
+
+        // Prueba 5
+        number = 14'd2026;
+        #500;
+
+        // Prueba 6
+        number = 14'd9999;
+        #500;
+
+        // Prueba 7: valor mayor a 9999
+        number = 14'd12000;
+        #500;
+
+        $finish;
     end
 
 endmodule
