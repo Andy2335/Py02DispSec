@@ -1,4 +1,4 @@
-module keypad_scanner(
+module escaner_teclado(
     input  logic       clk,
     input  logic       rst,
     input  logic       scan_tick,

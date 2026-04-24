@@ -1,4 +1,4 @@
-module keypad_decoder(
+module decodificador_teclado(
     input  logic [1:0] col_idx,
     input  logic [3:0] rows,
     output logic       key_found,
