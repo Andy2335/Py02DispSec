@@ -1,4 +1,4 @@
-OARD  = tangnano9k
+BOARD  = tangnano9k
 FAMILY = GW1N-9C
 DEVICE = GW1NR-LV9QN88PC6/I5
 
@@ -13,14 +13,14 @@ SOURCES = \
 	$(wildcard $(MODULOS)/Display_7Seg/*.sv) \
 	$(DESIGN)/top.sv
 
-TESTBENCH = ../sim/tb_teclado_hex.sv
+TESTBENCH = ../sim/tb_keypad_hex.sv
 
 CONSTRAINTS = ../constr/Constraints.cst
 
 TOP_DESIGN = top
-TOP_TB     = tb_teclado_hex
+TOP_TB     = tb_keypad_hex
 
-VCD_FILE = tb_teclado_hex.vcd
+VCD_FILE = tb_keypad_hex.vcd
  
 
 #****************
