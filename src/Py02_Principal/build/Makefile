@@ -13,19 +13,19 @@ SOURCES = \
 	$(wildcard $(MODULOS)/Display_7Seg/*.sv) \
 	$(DESIGN)/top.sv
 
-TESTBENCH = ../sim/tb_keypad_hex.sv
+TESTBENCH = ../sim/tb_teclado_hex.sv
 
 CONSTRAINTS = ../constr/Constraints.cst
 
 TOP_DESIGN = top
-TOP_TB     = tb_keypad_hex
+TOP_TB     = tb_teclado_hex
 
-VCD_FILE = tb_keypad_hex.vcd
+VCD_FILE = tb_teclado_hex.vcd
  
 
-****************
-NOTA - SOLO SE CAMBIAN EL TESTBENCH, EL TOP_TB Y EL VCD_FILE PARA HACER LAS SIMULACIONES.
-****************
+#****************
+#NOTA - SOLO SE CAMBIAN EL TESTBENCH, EL TOP_TB Y EL VCD_FILE PARA HACER LAS SIMULACIONES.
+#****************
 
 all: synth pnr bitstream load
 
