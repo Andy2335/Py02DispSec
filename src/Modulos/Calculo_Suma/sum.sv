@@ -1,4 +1,3 @@
-// ============================================================
 // Subsistema de suma aritmética de dos datos de 4 bits
 // Incluye salida de carry-out para encender un LED
 // ============================================================
