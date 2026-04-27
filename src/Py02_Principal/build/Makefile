@@ -1,4 +1,4 @@
-OARD  = tangnano9k
+BOARD  = tangnano9k
 FAMILY = GW1N-9C
 DEVICE = GW1NR-LV9QN88PC6/I5
 
@@ -11,21 +11,21 @@ SOURCES = \
 	$(wildcard $(MODULOS)/Teclado/*.sv) \
 	$(wildcard $(MODULOS)/Control/*.sv) \
 	$(wildcard $(MODULOS)/Display_7Seg/*.sv) \
-	$(DESIGN)/top.sv
+	
 
-TESTBENCH = ../sim/tb_keypad_hex.sv
+TESTBENCH = ../sim/tb_control_entrada.sv
 
 CONSTRAINTS = ../constr/Constraints.cst
 
 TOP_DESIGN = top
-TOP_TB     = tb_keypad_hex
+TOP_TB     = tb_control_entrada
 
-VCD_FILE = tb_keypad_hex.vcd
+VCD_FILE = tb_control_entrada.vcd
  
 
-****************
-NOTA - SOLO SE CAMBIAN EL TESTBENCH, EL TOP_TB Y EL VCD_FILE PARA HACER LAS SIMULACIONES.
-****************
+#****************
+#NOTA - SOLO SE CAMBIAN EL TESTBENCH, EL TOP_TB Y EL VCD_FILE PARA HACER LAS SIMULACIONES.
+#****************
 
 all: synth pnr bitstream load
 
