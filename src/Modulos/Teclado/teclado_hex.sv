@@ -11,7 +11,7 @@ module teclado_hex #(
 );
 
     logic [1:0] col_idx;
-    logic [1:0] col_idx_d;
+  
 
     logic [3:0] rows_sync;
     logic [3:0] rows_clean;
@@ -30,12 +30,6 @@ module teclado_hex #(
         .cols     (cols)
     );
 
-    always_ff @(posedge clk) begin
-        if (rst)
-            col_idx_d <= 2'd0;
-        else if (scan_tick)
-            col_idx_d <= col_idx;
-    end
 
     sincronizador #(
         .WIDTH(4)
@@ -57,7 +51,7 @@ module teclado_hex #(
     );
 
     decodificador_teclado u_decoder (
-        .col_idx  (col_idx_d),
+        .col_idx  (col_idx),
         .rows     (rows_clean),
         .key_found(key_found_raw),
         .key_code (key_code_raw)

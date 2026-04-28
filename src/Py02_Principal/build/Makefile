@@ -10,17 +10,18 @@ DESIGN = ../design
 SOURCES = \
 	$(wildcard $(MODULOS)/Teclado/*.sv) \
 	$(wildcard $(MODULOS)/Control/*.sv) \
+	$(wildcard $(MODULOS)/Calculo_Suma/*.sv) \
 	$(wildcard $(MODULOS)/Display_7Seg/*.sv) \
 	$(DESIGN)/top.sv
 
-TESTBENCH = ../sim/tb_keypad_hex.sv
+TESTBENCH = ../sim/tb_top.sv
 
 CONSTRAINTS = ../constr/Constraints.cst
 
 TOP_DESIGN = top
-TOP_TB     = tb_keypad_hex
+TOP_TB     = tb_top
 
-VCD_FILE = tb_keypad_hex.vcd
+VCD_FILE = tb_top.vcd
  
 
 #****************
