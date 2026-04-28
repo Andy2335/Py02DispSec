@@ -79,3 +79,12 @@ module teclado_hex #(
     end
 
 endmodule
+
+/* 
+Este módulo se encarga de leer el teclado hexadecimal completo. 
+Su función principal es detectar cuándo se presiona una tecla y convertir esa 
+pulsación en un valor digital de 4 bits (key_code). Para lograrlo, este integra el escaneo 
+de columnas, la sincronización de señales externas, la eliminación de rebotes y la 
+decodificación de la tecla presionada. Genera una señal key_valid que indica 
+que la tecla detectada es válida y puede ser utilizada por el sistema.
+*/

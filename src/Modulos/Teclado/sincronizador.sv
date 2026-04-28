@@ -22,3 +22,11 @@ module sincronizador #(
     end
 
 endmodule
+
+/* 
+Este módulo sincroniza las señales de entrada provenientes del teclado con el reloj interno 
+de la FPGA. 
+Esto es importante porque las señales externas pueden llegar de forma asincrónica y 
+causar errores de funcionamiento. Su objetivo es asegurar que los datos entren de forma 
+estable al sistema.
+*/

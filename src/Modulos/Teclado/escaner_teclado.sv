@@ -24,3 +24,11 @@ module escaner_teclado(
     end
 
 endmodule
+
+
+/* 
+Este módulo realiza el barrido de las columnas del teclado matricial. 
+Activa una columna a la vez para identificar en cuál se encuentra la tecla presionada. 
+Esto permite combinar esa información con las filas activas y así detectar correctamente 
+qué botón fue pulsado.
+*/

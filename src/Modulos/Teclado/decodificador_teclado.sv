@@ -58,3 +58,10 @@ module decodificador_teclado(
     end
 
 endmodule
+
+/* 
+Este módulo convierte la combinación de fila y columna detectada en el valor real de la 
+tecla presionada.
+Transforma una posición física del teclado en un número hexadecimal 
+como 1, 5, A o D, representado en binario de 4 bits.
+*/

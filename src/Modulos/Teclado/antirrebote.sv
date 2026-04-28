@@ -39,3 +39,10 @@ module antirrebote #(
     end
 
 endmodule
+
+/* 
+Este módulo elimina los rebotes mecánicos de las teclas del teclado. 
+Cuando una tecla se presiona, lo normal es que genere varias transiciones rápidas no deseadas. 
+El antirrebote espera a que la señal se mantenga estable antes de aceptarla como una 
+pulsación real.
+*/
