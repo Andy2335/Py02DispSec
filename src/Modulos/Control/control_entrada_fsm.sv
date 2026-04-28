@@ -102,3 +102,12 @@ module control_entrada_fsm(
     end
 
 endmodule
+
+/*
+Este módulo es la máquina de estados finitos (FSM) que controla todo el flujo del sistema. 
+Su trabajo es decidir cuándo se está ingresando el primer número (A), cuándo se pasa al 
+segundo número (B) y cuándo se debe mostrar el resultado final. También interpreta las 
+teclas especiales del teclado: una tecla permite cambiar de A a B, otra ejecuta la suma y 
+otra limpia todo el sistema para comenzar de nuevo. Además, controla qué valor se debe 
+mostrar en los displays según el estado actual del sistema.
+*/

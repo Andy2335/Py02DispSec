@@ -28,3 +28,13 @@ module constructor_numero #(
     end
 
 endmodule
+
+/*
+Este módulo se encarga de construir el número completo a partir de los dígitos que el 
+usuario va presionando en el teclado. Cada tecla llega como un valor de 4 bits (0–9), 
+y el módulo va formando el número como una calculadora: multiplica el valor anterior 
+por 10 y le suma el nuevo dígito. Por ejemplo, si se presiona 1, luego 2 y luego 3, 
+el resultado almacenado será 123. También controla cuántos dígitos se han ingresado 
+y activa la señal lleno cuando se llega al máximo permitido, que en este proyecto son 
+3 dígitos.
+*/
