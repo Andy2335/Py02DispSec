@@ -44,7 +44,7 @@ Implementar un sistema digital sincrónico que reciba dos cadenas de 4 bits medi
 
 En este proyecto se abordará el diseño e implementación de un sistema digital sincrónico que mediante un teclado matricial se ingresarán dos números enteros de 3 cifras decimales (8 bits por número), los cuales serán sumados utilizando un sumador de 8 bits. El resultado de la suma se mostrará en un display de 4x7 segmentos, permitiendo visualizar el resultado de la operación y un detector de desbordamiento. El sistema se implementará utilizando el lenguaje de descripción de hardware Verilog y se probará en una FPGA Nano Tang 9k.
 
-<img src="" width="700">
+<img src="https://github.com/Andy2335/Py02DispSec/blob/3f3f60fa3e27a0b1f55e09d4d0992d0f4d454024/doc/Imagenes/Montaje%20Sistema%20Animado.png" width="700">
 
 [** Wiki Home ** ](https://github.com/Andy2335/Py02DispSec/wiki)
 
