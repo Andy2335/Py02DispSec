@@ -99,16 +99,16 @@ module top(
         .lleno            (llenoB)
     );
 
-  suma_aritmetica_4bits u_suma (
+  suma_aritmetica_8bits u_suma (
     .clk       (clk),
     .rst       (rst),
-    .dato_a    (numA[3:0]),
-    .dato_b    (numB[3:0]),
-    .resultado (resultado_4bits),
-    .carry_out (carry_suma_4bits)
+    .dato_a    (numA[9:0]),
+    .dato_b    (numB[9:0]),
+    .resultado (resultado_8bits),
+    .carry_out (carry_suma_8bits)
 );
 
-assign resultado_suma = {7'b0, carry_suma_4bits, resultado_4bits};
+assign resultado_suma = {7'b0, carry_suma_8bits, resultado_8bits};
 
     always_comb begin
         case (seleccion_display)
