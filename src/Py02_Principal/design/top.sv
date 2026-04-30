@@ -16,6 +16,9 @@ module top(
     logic key_valid;
     logic [3:0] key_code;
 
+    logic [11:0] valor_temp;
+    logic [11:0] valor_temp2;
+
     logic limpiar;
     logic cargar_a;
     logic cargar_b;
@@ -32,8 +35,8 @@ module top(
     logic [11:0] resultado_suma;
     logic [11:0] valor_mostrar;
 
-    logic [10:0] resultado_8bits;
-    logic overflow_suma_8bits;
+    logic [10:0] resultado_suma_11bits;
+    logic        overflow_suma;
 
     logic [3:0] d0;
     logic [3:0] d1;
@@ -105,15 +108,15 @@ module top(
 
 
 suma_aritmetica_11bits u_suma (
-    .clk       (clk),
+    .clk       (clk27),
     .rst       (rst),
-    .dato_a    (numA[10:0]),
-    .dato_b    (numB[10:0]),
-    .resultado (resultado_8bits),
-    .overflow  (overflow_suma_8bits)
+    .dato_a    (numA),
+    .dato_b    (numB),
+    .resultado (resultado_suma_11bits),
+    .overflow  (overflow_suma)
 );
 
-assign resultado_suma = {1'b0, resultado_8bits};
+assign resultado_suma = {1'b0, resultado_suma_11bits};
 
     always_comb begin
         case (seleccion_display)
@@ -125,11 +128,83 @@ assign resultado_suma = {1'b0, resultado_8bits};
     end
 
     always_comb begin
-        d0 = valor_mostrar % 10;
-        d1 = (valor_mostrar / 10) % 10;
-        d2 = (valor_mostrar / 100) % 10;
-        d3 = (valor_mostrar / 1000) % 10;
+    d3 = 4'd0;
+    d2 = 4'd0;
+    d1 = 4'd0;
+    d0 = 4'd0;
+
+    if (valor_mostrar >= 12'd1000) begin
+        d3 = 4'd1;
+        valor_temp = valor_mostrar - 12'd1000;
+    end else begin
+        d3 = 4'd0;
+        valor_temp = valor_mostrar;
     end
+
+    if (valor_temp >= 12'd900) begin
+        d2 = 4'd9;
+        valor_temp2 = valor_temp - 12'd900;
+    end else if (valor_temp >= 12'd800) begin
+        d2 = 4'd8;
+        valor_temp2 = valor_temp - 12'd800;
+    end else if (valor_temp >= 12'd700) begin
+        d2 = 4'd7;
+        valor_temp2 = valor_temp - 12'd700;
+    end else if (valor_temp >= 12'd600) begin
+        d2 = 4'd6;
+        valor_temp2 = valor_temp - 12'd600;
+    end else if (valor_temp >= 12'd500) begin
+        d2 = 4'd5;
+        valor_temp2 = valor_temp - 12'd500;
+    end else if (valor_temp >= 12'd400) begin
+        d2 = 4'd4;
+        valor_temp2 = valor_temp - 12'd400;
+    end else if (valor_temp >= 12'd300) begin
+        d2 = 4'd3;
+        valor_temp2 = valor_temp - 12'd300;
+    end else if (valor_temp >= 12'd200) begin
+        d2 = 4'd2;
+        valor_temp2 = valor_temp - 12'd200;
+    end else if (valor_temp >= 12'd100) begin
+        d2 = 4'd1;
+        valor_temp2 = valor_temp - 12'd100;
+    end else begin
+        d2 = 4'd0;
+        valor_temp2 = valor_temp;
+    end
+
+    if (valor_temp2 >= 12'd90) begin
+        d1 = 4'd9;
+        d0 = valor_temp2 - 12'd90;
+    end else if (valor_temp2 >= 12'd80) begin
+        d1 = 4'd8;
+        d0 = valor_temp2 - 12'd80;
+    end else if (valor_temp2 >= 12'd70) begin
+        d1 = 4'd7;
+        d0 = valor_temp2 - 12'd70;
+    end else if (valor_temp2 >= 12'd60) begin
+        d1 = 4'd6;
+        d0 = valor_temp2 - 12'd60;
+    end else if (valor_temp2 >= 12'd50) begin
+        d1 = 4'd5;
+        d0 = valor_temp2 - 12'd50;
+    end else if (valor_temp2 >= 12'd40) begin
+        d1 = 4'd4;
+        d0 = valor_temp2 - 12'd40;
+    end else if (valor_temp2 >= 12'd30) begin
+        d1 = 4'd3;
+        d0 = valor_temp2 - 12'd30;
+    end else if (valor_temp2 >= 12'd20) begin
+        d1 = 4'd2;
+        d0 = valor_temp2 - 12'd20;
+    end else if (valor_temp2 >= 12'd10) begin
+        d1 = 4'd1;
+        d0 = valor_temp2 - 12'd10;
+    end else begin
+        d1 = 4'd0;
+        d0 = valor_temp2[3:0];
+    end
+end
 
     display_4dig_mux #(
         .CLK_FREQ(27000000),
