@@ -1,6 +1,6 @@
 module top(
     input  logic       clk27,
-    input  logic       rst_n,
+   input  logic rst_n,
 
     input  logic [3:0] keypad_rows,
     output logic [3:0] keypad_cols,
@@ -11,7 +11,7 @@ module top(
 );
 
     logic rst;
-    assign rst = ~rst_n;
+assign rst = ~rst_n;
 
     logic scan_tick;
     logic key_valid;

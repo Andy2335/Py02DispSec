@@ -3,14 +3,28 @@ module escaner_teclado(
     input  logic       rst,
     input  logic       scan_tick,
     output logic [1:0] col_idx,
-    output logic [3:0] cols
+    output logic [3:0] cols,
+    output logic       sample_en  // nuevo: pulso para leer filas
 );
+    logic phase; // 0 = drive, 1 = sample
 
     always_ff @(posedge clk) begin
-        if (rst)
-            col_idx <= 2'd0;
-        else if (scan_tick)
-            col_idx <= col_idx + 2'd1;
+        if (rst) begin
+            col_idx   <= 2'd0;
+            phase     <= 1'b0;
+            sample_en <= 1'b0;
+        end else begin
+            sample_en <= 1'b0;
+            if (scan_tick) begin
+                if (phase == 1'b0) begin
+                    phase <= 1'b1; // siguiente tick: samplear
+                end else begin
+                    sample_en <= 1'b1; // pulso de lectura
+                    phase     <= 1'b0;
+                    col_idx   <= col_idx + 2'd1;
+                end
+            end
+        end
     end
 
     always_comb begin
@@ -22,7 +36,6 @@ module escaner_teclado(
             default: cols = 4'b1111;
         endcase
     end
-
 endmodule
 
 
