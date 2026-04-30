@@ -7,6 +7,7 @@ module top(
 
     output logic [6:0] seg,
     output logic [3:0] dig
+    // Agregar LED Carry out 
 );
 
     logic rst;
