@@ -6,9 +6,9 @@
 module suma_aritmetica_8bits (
     input  logic        clk,        // Reloj del sistema
     input  logic        rst,        // Reset
-    input  logic [7:0]  dato_a,     // Primer dato (8 bits)
-    input  logic [7:0]  dato_b,     // Segundo dato (8 bits)
-    output logic [8:0]  resultado,  // Resultado completo (9 bits)
+    input  logic [9:0]  dato_a,     // Primer dato (8 bits)
+    input  logic [9:0]  dato_b,     // Segundo dato (8 bits)
+    output logic [10:0]  resultado,  // Resultado completo (9 bits)
     output logic        overflow    // LED de desbordamiento
 );
 
