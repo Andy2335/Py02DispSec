@@ -32,6 +32,9 @@ module top(
     logic [11:0] resultado_suma;
     logic [11:0] valor_mostrar;
 
+    logic [10:0] resultado_8bits;
+    logic overflow_suma_8bits;
+
     logic [3:0] d0;
     logic [3:0] d1;
     logic [3:0] d2;
@@ -99,16 +102,18 @@ module top(
         .lleno            (llenoB)
     );
 
-  suma_aritmetica_8bits u_suma (
+
+
+suma_aritmetica_11bits u_suma (
     .clk       (clk),
     .rst       (rst),
-    .dato_a    (numA[9:0]),
-    .dato_b    (numB[9:0]),
+    .dato_a    (numA[10:0]),
+    .dato_b    (numB[10:0]),
     .resultado (resultado_8bits),
-    .carry_out (carry_suma_8bits)
+    .overflow  (overflow_suma_8bits)
 );
 
-assign resultado_suma = {7'b0, carry_suma_8bits, resultado_8bits};
+assign resultado_suma = {1'b0, resultado_8bits};
 
     always_comb begin
         case (seleccion_display)
