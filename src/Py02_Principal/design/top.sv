@@ -7,54 +7,39 @@ module top(
 
     output logic [6:0] seg,
     output logic [3:0] dig
-    // Agregar LED Carry out 
 );
 
     logic rst;
-    assign rst = ~rst_n;
+    assign rst = 1'b0;
 
     logic scan_tick;
     logic key_valid;
     logic [3:0] key_code;
 
-    logic [11:0] valor_temp;
-    logic [11:0] valor_temp2;
+    logic [3:0] a0, a1, a2;
+    logic [3:0] b0, b1, b2;
+    logic [3:0] r0, r1, r2, r3;
 
-    logic limpiar;
-    logic cargar_a;
-    logic cargar_b;
-    logic calcular;
-    logic [1:0] seleccion_display;
+    logic [1:0] digitos_a;
+    logic [1:0] digitos_b;
 
-    logic [10:0] numA;
-    logic [10:0] numB;
-    logic [1:0] digitosA;
-    logic [1:0] digitosB;
-    logic llenoA;
-    logic llenoB;
+    typedef enum logic [1:0] {
+        INGRESAR_A = 2'd0,
+        INGRESAR_B = 2'd1,
+        MOSTRAR_R  = 2'd2
+    } estado_t;
 
-    logic [11:0] resultado_suma;
-    logic [11:0] valor_mostrar;
-
-    logic [10:0] resultado_suma_11bits;
-    logic        overflow_suma;
-
-    logic [3:0] d0;
-    logic [3:0] d1;
-    logic [3:0] d2;
-    logic [3:0] d3;
+    estado_t estado = INGRESAR_A;
 
     generador_tick #(
-        .DIV(270000)
+        .DIV(27000)
     ) u_tick_teclado (
-        .clk (clk27),
-        .rst (rst),
-        .tick(scan_tick)
+        .clk  (clk27),
+        .rst  (rst),
+        .tick (scan_tick)
     );
 
-    teclado_hex #(
-        .DEBOUNCE_COUNT(135000)
-    ) u_teclado (
+    teclado_hex u_teclado (
         .clk        (clk27),
         .rst        (rst),
         .scan_tick  (scan_tick),
@@ -64,160 +49,110 @@ module top(
         .key_code   (key_code)
     );
 
-    control_entrada_fsm u_control (
-        .clk               (clk27),
-        .rst               (rst),
-        .key_valid         (key_valid),
-        .key_code          (key_code),
-        .a_lleno           (llenoA),
-        .b_lleno           (llenoB),
-        .limpiar           (limpiar),
-        .cargar_a          (cargar_a),
-        .cargar_b          (cargar_b),
-        .calcular          (calcular),
-        .seleccion_display (seleccion_display)
-    );
-
-    constructor_numero #(
-        .WIDTH(11),
-        .MAX_DIGITOS(3)
-    ) u_numA (
-        .clk              (clk27),
-        .rst              (rst),
-        .limpiar          (limpiar),
-        .cargar_digito    (cargar_a),
-        .digito           (key_code),
-        .numero           (numA),
-        .cantidad_digitos (digitosA),
-        .lleno            (llenoA)
-    );
-
-    constructor_numero #(
-        .WIDTH(11),
-        .MAX_DIGITOS(3)
-    ) u_numB (
-        .clk              (clk27),
-        .rst              (rst),
-        .limpiar          (limpiar),
-        .cargar_digito    (cargar_b),
-        .digito           (key_code),
-        .numero           (numB),
-        .cantidad_digitos (digitosB),
-        .lleno            (llenoB)
-    );
-
-
-
-suma_aritmetica_11bits u_suma (
-    .clk       (clk27),
-    .rst       (rst),
-    .dato_a    (numA),
-    .dato_b    (numB),
-    .resultado (resultado_suma_11bits),
-    .overflow  (overflow_suma)
-);
-
-assign resultado_suma = {1'b0, resultado_suma_11bits};
+    logic [4:0] suma0, suma1, suma2;
 
     always_comb begin
-        case (seleccion_display)
-            2'd0: valor_mostrar = {1'b0, numA};
-            2'd1: valor_mostrar = {1'b0, numB};
-            2'd2: valor_mostrar = resultado_suma;
-            default: valor_mostrar = 12'd0;
+        suma0 = a0 + b0;
+        suma1 = a1 + b1 + (suma0 >= 10);
+        suma2 = a2 + b2 + (suma1 >= 10);
+
+        r0 = (suma0 >= 10) ? suma0 - 10 : suma0;
+        r1 = (suma1 >= 10) ? suma1 - 10 : suma1;
+        r2 = (suma2 >= 10) ? suma2 - 10 : suma2;
+        r3 = (suma2 >= 10) ? 4'd1 : 4'd0;
+    end
+
+    always_ff @(posedge clk27) begin
+        if (key_valid) begin
+
+            if (key_code == 4'hD || key_code == 4'hE) begin
+                estado <= INGRESAR_A;
+
+                a0 <= 0; a1 <= 0; a2 <= 0;
+                b0 <= 0; b1 <= 0; b2 <= 0;
+
+                digitos_a <= 0;
+                digitos_b <= 0;
+            end else begin
+                case (estado)
+
+                    INGRESAR_A: begin
+                        if (key_code <= 9 && digitos_a < 3) begin
+                            a2 <= a1;
+                            a1 <= a0;
+                            a0 <= key_code;
+                            digitos_a <= digitos_a + 1'b1;
+                        end else if (key_code == 4'hA) begin
+                            estado <= INGRESAR_B;
+                        end
+                    end
+
+                    INGRESAR_B: begin
+                        if (key_code <= 9 && digitos_b < 3) begin
+                            b2 <= b1;
+                            b1 <= b0;
+                            b0 <= key_code;
+                            digitos_b <= digitos_b + 1'b1;
+                        end else if (key_code == 4'hB || key_code == 4'hC || key_code == 4'hF) begin
+                            estado <= MOSTRAR_R;
+                        end
+                    end
+
+                    MOSTRAR_R: begin
+                    end
+
+                endcase
+            end
+        end
+    end
+
+    logic [3:0] d0, d1, d2, d3;
+
+    always_comb begin
+        case (estado)
+            INGRESAR_A: begin
+                d0 = a0;
+                d1 = a1;
+                d2 = a2;
+                d3 = 0;
+            end
+
+            INGRESAR_B: begin
+                d0 = b0;
+                d1 = b1;
+                d2 = b2;
+                d3 = 0;
+            end
+
+            MOSTRAR_R: begin
+                d0 = r0;
+                d1 = r1;
+                d2 = r2;
+                d3 = r3;
+            end
+
+            default: begin
+                d0 = 0;
+                d1 = 0;
+                d2 = 0;
+                d3 = 0;
+            end
         endcase
     end
-
-    always_comb begin
-    d3 = 4'd0;
-    d2 = 4'd0;
-    d1 = 4'd0;
-    d0 = 4'd0;
-
-    if (valor_mostrar >= 12'd1000) begin
-        d3 = 4'd1;
-        valor_temp = valor_mostrar - 12'd1000;
-    end else begin
-        d3 = 4'd0;
-        valor_temp = valor_mostrar;
-    end
-
-    if (valor_temp >= 12'd900) begin
-        d2 = 4'd9;
-        valor_temp2 = valor_temp - 12'd900;
-    end else if (valor_temp >= 12'd800) begin
-        d2 = 4'd8;
-        valor_temp2 = valor_temp - 12'd800;
-    end else if (valor_temp >= 12'd700) begin
-        d2 = 4'd7;
-        valor_temp2 = valor_temp - 12'd700;
-    end else if (valor_temp >= 12'd600) begin
-        d2 = 4'd6;
-        valor_temp2 = valor_temp - 12'd600;
-    end else if (valor_temp >= 12'd500) begin
-        d2 = 4'd5;
-        valor_temp2 = valor_temp - 12'd500;
-    end else if (valor_temp >= 12'd400) begin
-        d2 = 4'd4;
-        valor_temp2 = valor_temp - 12'd400;
-    end else if (valor_temp >= 12'd300) begin
-        d2 = 4'd3;
-        valor_temp2 = valor_temp - 12'd300;
-    end else if (valor_temp >= 12'd200) begin
-        d2 = 4'd2;
-        valor_temp2 = valor_temp - 12'd200;
-    end else if (valor_temp >= 12'd100) begin
-        d2 = 4'd1;
-        valor_temp2 = valor_temp - 12'd100;
-    end else begin
-        d2 = 4'd0;
-        valor_temp2 = valor_temp;
-    end
-
-    if (valor_temp2 >= 12'd90) begin
-        d1 = 4'd9;
-        d0 = valor_temp2 - 12'd90;
-    end else if (valor_temp2 >= 12'd80) begin
-        d1 = 4'd8;
-        d0 = valor_temp2 - 12'd80;
-    end else if (valor_temp2 >= 12'd70) begin
-        d1 = 4'd7;
-        d0 = valor_temp2 - 12'd70;
-    end else if (valor_temp2 >= 12'd60) begin
-        d1 = 4'd6;
-        d0 = valor_temp2 - 12'd60;
-    end else if (valor_temp2 >= 12'd50) begin
-        d1 = 4'd5;
-        d0 = valor_temp2 - 12'd50;
-    end else if (valor_temp2 >= 12'd40) begin
-        d1 = 4'd4;
-        d0 = valor_temp2 - 12'd40;
-    end else if (valor_temp2 >= 12'd30) begin
-        d1 = 4'd3;
-        d0 = valor_temp2 - 12'd30;
-    end else if (valor_temp2 >= 12'd20) begin
-        d1 = 4'd2;
-        d0 = valor_temp2 - 12'd20;
-    end else if (valor_temp2 >= 12'd10) begin
-        d1 = 4'd1;
-        d0 = valor_temp2 - 12'd10;
-    end else begin
-        d1 = 4'd0;
-        d0 = valor_temp2[3:0];
-    end
-end
 
     display_4dig_mux #(
         .CLK_FREQ(27000000),
         .REFRESH_HZ(1000),
-        .COMMON_ANODE(1)
+        .COMMON_ANODE(0)
     ) u_display (
         .clk (clk27),
-        .rst (rst),
+        .rst (1'b0),
+
         .d0  (d0),
         .d1  (d1),
         .d2  (d2),
         .d3  (d3),
+
         .seg (seg),
         .dig (dig)
     );
