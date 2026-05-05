@@ -25,3 +25,9 @@ module generador_tick #(
     end
 
 endmodule
+
+/* 
+Este módulo genera pulsos de tiempo más lentos a partir del reloj principal de 27 MHz. 
+Estos pulsos se usan para controlar procesos que no necesitan alta velocidad, 
+como el escaneo del teclado o el refresco de los displays.
+*/

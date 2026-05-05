@@ -1,85 +1,153 @@
-module teclado_hex #(
-    parameter int DEBOUNCE_COUNT = 135000
-)(
+module teclado_hex(
     input  logic       clk,
     input  logic       rst,
     input  logic       scan_tick,
     input  logic [3:0] rows_async,
+
     output logic [3:0] cols,
     output logic       key_valid,
     output logic [3:0] key_code
 );
 
+    //--------------------------------------------------
+    // Barrido de columnas
+    //--------------------------------------------------
     logic [1:0] col_idx;
-    logic [1:0] col_idx_d;
-
-    logic [3:0] rows_sync;
-    logic [3:0] rows_clean;
-
-    logic       key_found_raw;
-    logic [3:0] key_code_raw;
-
-    logic       key_found_d;
-    logic [3:0] key_code_d;
-
-    escaner_teclado u_scanner (
-        .clk      (clk),
-        .rst      (rst),
-        .scan_tick(scan_tick),
-        .col_idx  (col_idx),
-        .cols     (cols)
-    );
-
-    always_ff @(posedge clk) begin
-        if (rst)
-            col_idx_d <= 2'd0;
-        else if (scan_tick)
-            col_idx_d <= col_idx;
-    end
-
-    sincronizador #(
-        .WIDTH(4)
-    ) u_sync (
-        .clk     (clk),
-        .rst     (rst),
-        .async_in(rows_async),
-        .sync_out(rows_sync)
-    );
-
-    antirrebote #(
-        .WIDTH(4),
-        .COUNT_MAX(DEBOUNCE_COUNT)
-    ) u_debounce (
-        .clk      (clk),
-        .rst      (rst),
-        .noisy_in (rows_sync),
-        .clean_out(rows_clean)
-    );
-
-    decodificador_teclado u_decoder (
-        .col_idx  (col_idx_d),
-        .rows     (rows_clean),
-        .key_found(key_found_raw),
-        .key_code (key_code_raw)
-    );
+    logic       phase;
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            key_valid   <= 1'b0;
-            key_code    <= 4'h0;
-            key_found_d <= 1'b0;
-            key_code_d  <= 4'h0;
+            col_idx <= 2'd0;
+            phase   <= 1'b0;
+        end else if (scan_tick) begin
+            if (phase == 1'b0) begin
+                phase <= 1'b1;
+            end else begin
+                phase <= 1'b0;
+                if (col_idx == 2'd3)
+                    col_idx <= 2'd0;
+                else
+                    col_idx <= col_idx + 2'd1;
+            end
+        end
+    end
+
+    always_comb begin
+        case (col_idx)
+            2'd0: cols = 4'b1110;
+            2'd1: cols = 4'b1101;
+            2'd2: cols = 4'b1011;
+            2'd3: cols = 4'b0111;
+            default: cols = 4'b1111;
+        endcase
+    end
+
+    //--------------------------------------------------
+    // Sincronizar filas (doble flip-flop)
+    //--------------------------------------------------
+    logic [3:0] rows_s1;
+    logic [3:0] rows_s2;
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            rows_s1 <= 4'b1111;
+            rows_s2 <= 4'b1111;
+        end else begin
+            rows_s1 <= rows_async;
+            rows_s2 <= rows_s1;
+        end
+    end
+
+    //--------------------------------------------------
+    // Detectar fila activa
+    // Se evita indexado de bit individual en always_comb
+    // usando mascaras de 4 bits, compatible con vvp
+    //--------------------------------------------------
+    logic       row_found;
+    logic [1:0] row_idx;
+
+    always_comb begin
+        row_found = 1'b0;
+        row_idx   = 2'd0;
+
+        if ((rows_s2 & 4'b0001) == 4'b0000) begin
+            row_found = 1'b1;
+            row_idx   = 2'd0;
+        end else if ((rows_s2 & 4'b0010) == 4'b0000) begin
+            row_found = 1'b1;
+            row_idx   = 2'd1;
+        end else if ((rows_s2 & 4'b0100) == 4'b0000) begin
+            row_found = 1'b1;
+            row_idx   = 2'd2;
+        end else if ((rows_s2 & 4'b1000) == 4'b0000) begin
+            row_found = 1'b1;
+            row_idx   = 2'd3;
+        end
+    end
+
+    //--------------------------------------------------
+    // Decodificar tecla
+    //--------------------------------------------------
+    logic [3:0] cur_key;
+
+    always_comb begin
+        case ({row_idx, col_idx})
+            {2'd0, 2'd0}: cur_key = 4'h1;
+            {2'd0, 2'd1}: cur_key = 4'h2;
+            {2'd0, 2'd2}: cur_key = 4'h3;
+            {2'd0, 2'd3}: cur_key = 4'hA;
+
+            {2'd1, 2'd0}: cur_key = 4'h4;
+            {2'd1, 2'd1}: cur_key = 4'h5;
+            {2'd1, 2'd2}: cur_key = 4'h6;
+            {2'd1, 2'd3}: cur_key = 4'hB;
+
+            {2'd2, 2'd0}: cur_key = 4'h7;
+            {2'd2, 2'd1}: cur_key = 4'h8;
+            {2'd2, 2'd2}: cur_key = 4'h9;
+            {2'd2, 2'd3}: cur_key = 4'hC;
+
+            {2'd3, 2'd0}: cur_key = 4'hE;
+            {2'd3, 2'd1}: cur_key = 4'h0;
+            {2'd3, 2'd2}: cur_key = 4'hF;
+            {2'd3, 2'd3}: cur_key = 4'hD;
+
+            default: cur_key = 4'h0;
+        endcase
+    end
+
+    //--------------------------------------------------
+    // Emitir key_valid con bloqueo anti-repeticion
+    //--------------------------------------------------
+    logic locked;
+    logic any_key_this_scan;
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            key_valid         <= 1'b0;
+            key_code          <= 4'h0;
+            locked            <= 1'b0;
+            any_key_this_scan <= 1'b0;
         end else begin
             key_valid <= 1'b0;
 
-            if (scan_tick) begin
-                if (key_found_raw && (!key_found_d || (key_code_raw != key_code_d))) begin
-                    key_valid <= 1'b1;
-                    key_code  <= key_code_raw;
+            if (scan_tick && phase) begin
+
+                if (row_found) begin
+                    any_key_this_scan <= 1'b1;
+
+                    if (!locked) begin
+                        key_code  <= cur_key;
+                        key_valid <= 1'b1;
+                        locked    <= 1'b1;
+                    end
                 end
 
-                key_found_d <= key_found_raw;
-                key_code_d  <= key_code_raw;
+                if (col_idx == 2'd3) begin
+                    if (!any_key_this_scan && !row_found)
+                        locked <= 1'b0;
+                    any_key_this_scan <= 1'b0;
+                end
             end
         end
     end
